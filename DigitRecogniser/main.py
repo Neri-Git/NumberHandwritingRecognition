@@ -10,16 +10,26 @@ BRUSH_SIZE = 18
 
 
 def preprocess_image(img):
-    # Convert to grayscale
     img = img.convert("L")
+    arr = np.array(img)
 
-    # Resize to MNIST size
-    img = img.resize((28, 28))
+    coords = np.column_stack(np.where(arr > 20))
 
-    # Normalize
-    arr = np.array(img) / 255.0
+    if coords.size == 0:
+        return np.zeros((1, 28, 28, 1))
 
-    # Reshape for CNN
+    y_min, x_min = coords.min(axis=0)
+    y_max, x_max = coords.max(axis=0)
+
+    digit = arr[y_min:y_max+1, x_min:x_max+1]
+
+    digit_img = Image.fromarray(digit)
+    digit_img = digit_img.resize((20, 20))
+
+    new_img = Image.new("L", (28, 28), 0)
+    new_img.paste(digit_img, (4, 4))
+
+    arr = np.array(new_img) / 255.0
     arr = arr.reshape(1, 28, 28, 1)
 
     return arr
@@ -32,14 +42,12 @@ class DigitApp:
 
         self.root.title("Digit Recognizer")
 
-        # Drawing image (for processing)
         self.image = Image.new("RGB", (CANVAS_SIZE, CANVAS_SIZE), "black")
         self.draw = ImageDraw.Draw(self.image)
 
         self.last_x = None
         self.last_y = None
 
-        # Layout
         frame = ttk.Frame(root, padding=10)
         frame.grid()
 
@@ -50,14 +58,14 @@ class DigitApp:
         self.canvas.bind("<B1-Motion>", self.draw_line)
         self.canvas.bind("<ButtonRelease-1>", self.stop_draw)
 
-        ttk.Button(frame, text="Predict", command=self.predict).grid(row=0, column=1, padx=10)
-        ttk.Button(frame, text="Clear", command=self.clear).grid(row=1, column=1, padx=10)
+        ttk.Button(frame, text="Predict", command=self.predict).grid(row=0, column=1)
+        ttk.Button(frame, text="Clear", command=self.clear).grid(row=1, column=1)
 
         self.result_label = ttk.Label(frame, text="Prediction: -", font=("Arial", 16))
-        self.result_label.grid(row=2, column=1, padx=10)
+        self.result_label.grid(row=2, column=1)
 
         self.prob_label = tk.Text(frame, width=25, height=10)
-        self.prob_label.grid(row=3, column=1, padx=10)
+        self.prob_label.grid(row=3, column=1)
 
     def start_draw(self, event):
         self.last_x = event.x
@@ -100,7 +108,6 @@ class DigitApp:
 
         predictions = self.model.predict(processed)[0]
 
-        # Best prediction
         predicted_digit = np.argmax(predictions)
         confidence = predictions[predicted_digit]
 
@@ -108,7 +115,6 @@ class DigitApp:
             text=f"Prediction: {predicted_digit} ({confidence * 100:.2f}%)"
         )
 
-        # Show top probabilities
         sorted_indices = np.argsort(predictions)[::-1]
 
         self.prob_label.delete("1.0", tk.END)
