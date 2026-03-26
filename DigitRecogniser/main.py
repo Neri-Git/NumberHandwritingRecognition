@@ -3,7 +3,7 @@ from tkinter import ttk
 import numpy as np
 from PIL import Image, ImageDraw
 
-from model import load_model
+from model import load_model, load_letter_model
 
 CANVAS_SIZE = 280
 BRUSH_SIZE = 18
@@ -36,11 +36,14 @@ def preprocess_image(img):
 
 
 class DigitApp:
-    def __init__(self, root, model):
+    def __init__(self, root, digit_model, letter_model):
         self.root = root
-        self.model = model
+        self.root.title("Digit & Letter Recognizer")
 
-        self.root.title("Digit Recognizer")
+        self.digit_model = digit_model
+        self.letter_model = letter_model
+
+        self.mode = tk.StringVar(value="digit")
 
         self.image = Image.new("RGB", (CANVAS_SIZE, CANVAS_SIZE), "black")
         self.draw = ImageDraw.Draw(self.image)
@@ -51,21 +54,31 @@ class DigitApp:
         frame = ttk.Frame(root, padding=10)
         frame.grid()
 
+        # Canvas
         self.canvas = tk.Canvas(frame, width=CANVAS_SIZE, height=CANVAS_SIZE, bg="black")
-        self.canvas.grid(row=0, column=0, rowspan=4)
+        self.canvas.grid(row=0, column=0, rowspan=8)
 
         self.canvas.bind("<ButtonPress-1>", self.start_draw)
         self.canvas.bind("<B1-Motion>", self.draw_line)
         self.canvas.bind("<ButtonRelease-1>", self.stop_draw)
 
-        ttk.Button(frame, text="Predict", command=self.predict).grid(row=0, column=1)
-        ttk.Button(frame, text="Clear", command=self.clear).grid(row=1, column=1)
+        # Buttons
+        ttk.Button(frame, text="Predict", command=self.predict).grid(row=0, column=1, padx=10)
+        ttk.Button(frame, text="Clear", command=self.clear).grid(row=1, column=1, padx=10)
 
+        # Mode selector
+        ttk.Label(frame, text="Mode:").grid(row=2, column=1, pady=(10, 0))
+
+        ttk.Radiobutton(frame, text="Digits", variable=self.mode, value="digit").grid(row=3, column=1)
+        ttk.Radiobutton(frame, text="Letters", variable=self.mode, value="letter").grid(row=4, column=1)
+
+        # Result
         self.result_label = ttk.Label(frame, text="Prediction: -", font=("Arial", 16))
-        self.result_label.grid(row=2, column=1)
+        self.result_label.grid(row=5, column=1, pady=10)
 
+        # Probabilities
         self.prob_label = tk.Text(frame, width=25, height=10)
-        self.prob_label.grid(row=3, column=1)
+        self.prob_label.grid(row=6, column=1, padx=10)
 
     def start_draw(self, event):
         self.last_x = event.x
@@ -106,13 +119,19 @@ class DigitApp:
     def predict(self):
         processed = preprocess_image(self.image)
 
-        predictions = self.model.predict(processed)[0]
+        if self.mode.get() == "digit":
+            predictions = self.digit_model.predict(processed)[0]
+            labels = [str(i) for i in range(10)]
+        else:
+            predictions = self.letter_model.predict(processed)[0]
+            labels = [chr(ord('A') + i) for i in range(26)]
 
-        predicted_digit = np.argmax(predictions)
-        confidence = predictions[predicted_digit]
+        predicted_index = np.argmax(predictions)
+        predicted_label = labels[predicted_index]
+        confidence = predictions[predicted_index]
 
         self.result_label.config(
-            text=f"Prediction: {predicted_digit} ({confidence * 100:.2f}%)"
+            text=f"Prediction: {predicted_label} ({confidence * 100:.2f}%)"
         )
 
         sorted_indices = np.argsort(predictions)[::-1]
@@ -120,20 +139,19 @@ class DigitApp:
         self.prob_label.delete("1.0", tk.END)
 
         for i in range(5):
-            digit = sorted_indices[i]
-            prob = predictions[digit]
-
+            idx = sorted_indices[i]
             self.prob_label.insert(
                 tk.END,
-                f"{i+1}. {digit}: {prob * 100:.2f}%\n"
+                f"{i+1}. {labels[idx]}: {predictions[idx]*100:.2f}%\n"
             )
 
 
 def main():
-    model = load_model()
+    digit_model = load_model()
+    letter_model = load_letter_model()
 
     root = tk.Tk()
-    app = DigitApp(root, model)
+    app = DigitApp(root, digit_model, letter_model)
     root.mainloop()
 
 

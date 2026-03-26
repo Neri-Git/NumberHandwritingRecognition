@@ -53,3 +53,33 @@ def load_data():
     print("Combined test shape:", x_test.shape)
 
     return (x_train, y_train), (x_test, y_test)
+
+def load_letters():
+    import tensorflow_datasets as tfds
+    import tensorflow as tf
+
+    ds_train, ds_test = tfds.load(
+        'emnist/letters',
+        split=['train', 'test'],
+        as_supervised=True
+    )
+
+    def preprocess(image, label):
+        # Fix rotation
+        image = tf.transpose(image, perm=[1, 0, 2])
+
+        # Normalize
+        image = tf.cast(image, tf.float32) / 255.0
+
+        # Labels: 1–26 → 0–25
+        label = label - 1
+
+        return image, label
+
+    ds_train = ds_train.map(preprocess).batch(100000)
+    ds_test = ds_test.map(preprocess).batch(20000)
+
+    x_train, y_train = next(iter(ds_train))
+    x_test, y_test = next(iter(ds_test))
+
+    return (x_train.numpy(), y_train.numpy()), (x_test.numpy(), y_test.numpy())
