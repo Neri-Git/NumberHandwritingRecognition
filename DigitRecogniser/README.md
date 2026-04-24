@@ -1,66 +1,53 @@
-# Handwritten Digit Recognizer
+# Rozpoznawanie Ręcznie Pisanych Cyfr
 
-This is a simple Python project I made to recognize handwritten digits.  
-It uses TensorFlow and a small neural network to predict digits from 0 to 9.
+To prosty projekt w Pythonie, który stworzyłem do rozpoznawania ręcznie pisanych cyfr.  
+Wykorzystuje TensorFlow oraz niewielką sieć neuronową do przewidywania cyfr od 0 do 9.
 
-The app lets you draw a digit on a canvas, then it tries to guess what number it is.
+Aplikacja pozwala narysować cyfrę na obszarze roboczym (canvasie), a następnie próbuje odgadnąć, jaka to liczba.
 
-## What it uses
+## Wykorzystane technologie
 
-- Python
-- TensorFlow / Keras
-- TensorFlow Datasets
-- NumPy
-- Pillow
-- Tkinter
+- Python  
+- TensorFlow / Keras  
+- TensorFlow Datasets  
+- NumPy  
+- Pillow  
+- Tkinter  
 
-## What it does
+## Funkcjonalność
 
-- Trains a model on MNIST and EMNIST digit datasets
-- Lets you draw a digit in a small desktop app
-- Predicts the number you drew
-- Shows the confidence for each prediction
-- Saves the trained model so it can be reused later
+- Trenuje model na zbiorach danych MNIST i EMNIST  
+- Umożliwia rysowanie cyfry w prostej aplikacji desktopowej  
+- Przewiduje narysowaną liczbę  
+- Wyświetla poziom pewności dla każdej predykcji  
+- Zapisuje wytrenowany model, aby można było go użyć ponownie  
 
-## How it works
+## Jak to działa
 
-1. The model is trained on digit images from MNIST and EMNIST.
-2. EMNIST images are corrected for orientation before training
-3. You draw a digit on the Tkinter canvas.
-4. The drawing gets resized and cleaned up before prediction.
-5. The model gives a prediction and confidence scores.
+1. Model jest trenowany na obrazach cyfr ze zbiorów MNIST i EMNIST.  
+2. Obrazy EMNIST są przed treningiem korygowane pod względem orientacji.  
+3. Rysujesz cyfrę na obszarze Tkintera.  
+4. Rysunek jest skalowany i oczyszczany przed predykcją.  
+5. Model zwraca przewidywanie oraz poziomy pewności.
 
-## First Run
+## Pierwsze uruchomienie
 
-If no saved model is found, the program will train one automatically.   
-This may take a few minutes depending on your system.
+Jeśli nie zostanie znaleziony zapisany model, program automatycznie go wytrenuje.  
+Może to potrwać kilka minut w zależności od wydajności systemu.
 
+## Pliki projektu
 
-## Project files
+- `data.py` — wczytywanie i przygotowanie danych  
+- `model.py` — budowa, trenowanie, zapisywanie i wczytywanie modelu  
+- `gui.py` — interfejs graficzny do rysowania cyfr  
+- `main.py` — punkt wejścia aplikacji  
+- `digit_model.keras` — zapisany model  
 
-- `data.py` — loads and prepares the dataset
-- `model.py` — builds, trains, saves, and loads the model
-- `gui.py` — the GUI where you draw digits
-- `main.py` — application entry point
-- `digit_model.keras` — saved model file
+## Jak uruchomić
 
-## How to run it
-
-Clone the project:
+Sklonuj projekt:
 
 ```bash
 git clone https://github.com/your-username/handwritten-digit-recognizer.git
 cd handwritten-digit-recognizer
 python main.py
-```
-
-## Summary
-
-This project demonstrates a full pipeline:
-
-- data loading and preprocessing
-- CNN model training
-- model persistence
-- interactive GUI for real-time predictions
-
-It is a minimal but complete example of deploying a machine learning model in a desktop application.
