@@ -4,6 +4,7 @@ import numpy as np
 
 
 def load_mnist():
+    """Load MNIST and normalize to (N, 28, 28, 1)."""
     mnist = tf.keras.datasets.mnist
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
@@ -14,6 +15,7 @@ def load_mnist():
 
 
 def load_emnist():
+    """Load EMNIST digits, fix rotation, and normalize."""
     ds_train, ds_test = tfds.load(
         'emnist/digits',
         split=['train', 'test'],
@@ -21,12 +23,8 @@ def load_emnist():
     )
 
     def preprocess(image, label):
-        # Fix rotation
-        image = tf.transpose(image, perm=[1, 0, 2])
-
-        # Normalize
+        image = tf.transpose(image, perm=[1, 0, 2])  # fix rotation
         image = tf.cast(image, tf.float32) / 255.0
-
         return image, label
 
     ds_train = ds_train.map(preprocess).batch(60000)
@@ -39,10 +37,10 @@ def load_emnist():
 
 
 def load_data():
+    """Combine MNIST and EMNIST into one dataset."""
     (mnist_x_train, mnist_y_train), (mnist_x_test, mnist_y_test) = load_mnist()
     (emnist_x_train, emnist_y_train), (emnist_x_test, emnist_y_test) = load_emnist()
 
-    # Merge datasets
     x_train = np.concatenate([mnist_x_train, emnist_x_train])
     y_train = np.concatenate([mnist_y_train, emnist_y_train])
 

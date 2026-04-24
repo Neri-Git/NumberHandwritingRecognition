@@ -6,6 +6,7 @@ MODEL_PATH = "digit_model.keras"
 
 
 def build_model():
+    """Build and compile CNN for digit classification."""
     model = models.Sequential([
         layers.Input(shape=(28, 28, 1)),
 
@@ -30,6 +31,7 @@ def build_model():
 
 
 def train_and_save():
+    """Train model on data and save to disk."""
     (x_train, y_train), (x_test, y_test) = load_data()
 
     model = build_model()
@@ -48,6 +50,7 @@ def train_and_save():
 
 
 def load_model():
+    """Load saved model or train if not found."""
     try:
         return tf.keras.models.load_model(MODEL_PATH)
     except:
